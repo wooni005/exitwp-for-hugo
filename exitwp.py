@@ -184,7 +184,7 @@ def write_jekyll(data, target_format):
     item_uids = {}
     attachments = {}
 
-    def get_blog_path(data, path_infix='jekyll'):
+    def get_blog_path(data, path_infix='hugo'): #AW!! Changed jekyll path into hugo
         name = data['header']['link']
         name = re.sub('^https?', '', name)
         name = re.sub('[^A-Za-z0-9_.-]', '', name)
