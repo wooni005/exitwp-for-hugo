@@ -2,20 +2,20 @@
 Exitwp for Hugo
 ######
 
-Exitwp is tool for making migration from one or more wordpress blogs to the `jekyll blog engine <https://github.com/mojombo/jekyll/>`_ as easy as possible.
+Exitwp is tool for making migration from one or more wordpress blogs to the `hugo blog engine <https://gohugo.io/>`_ as easy as possible.
 
 By default it will try to convert as much information as possible from wordpress but can also be told to filter the amount of data it converts.
 
-The latest version of these docs should always be available at https://github.com/thomasf/exitwp
+The latest version of these docs should always be available at https://github.com/wooni005/exitwp-for-hugo
 
 Getting started
 ===============
- * `Download <https://github.com/thomasf/exitwp/zipball/master>`_ or clone using ``git clone https://github.com/thomasf/exitwp.git``
+ * `Download <https://github.com/wooni005/exitwp-for-hugo/zipball/master>`_ or clone using ``git clone https://github.com/wooni005/exitwp-for-hugo.git``
  * Export one or more wordpress blogs using the wordpress exporter under tools/export in wordpress admin.
  * Put all wordpress xml files in the ``wordpress-xml`` directory
  * Special note for Wordpress 3.1, you need to add a missing namespace in rss tag : ``xmlns:atom="http://www.w3.org/2005/Atom"``
  * Run xmllint on your export file and fix errors if there are.
- * Run the converter by typing ``python exitwp.py`` in the console from the directory of the unzipped archive
+ * Run the converter by typing ``./exitwp.py`` in the console from the directory of the unzipped archive
  * You should now have all the blogs converted into separate directories under the ``build`` directory
 
 Runtime dependencies
@@ -42,26 +42,13 @@ Note that PyYAML will require other packages to compile correctly under ubuntu/d
 
    ``sudo apt-get install libyaml-dev python-dev build-essential``
 
-Using Vagrant for dependency management
----------------------------------------
-
-In the event your local system is incompatible with the dependencies listed (or you'd rather not install them), you can use the included Vagrantfile to start a VM with all necessary dependencies installed.
-
-1. Lint and place all wordpress xml files in the ``wordpress-xml`` directory as mentioned above
-2. In the directory of the unzipped archive, run ``vagrant up``.
-3. SSH to your Vagrant VM using ``vagrant ssh``
-4. Run ``cd /vagrant`` to open the VM's shared folder
-5. Run the converter from the VM by typing ``python exitwp.py``
-6. After the converter completes, exit the SSH session using ``exit``
-7. You should now have all the blogs converted into separate directories under the ``build`` directory
-8. **Important:** Once satisfied with the results, run ``vagrant destroy -f`` to shut down the VM and remove the virtual drive from your local machine
 
 Configuration/Customization
 ===========================
 
-See the `configuration file <https://github.com/thomasf/exitwp/blob/master/config.yaml>`_ for all configurable options.
+See the `configuration file <https://github.com/wooni005/exitwp-for-hugo/blob/master/config.yaml>`_ for all configurable options.
 
-Some things like custom handling of non standard post types is not fully configurable through the config file. You might have to modify the `source code <https://github.com/thomasf/exitwp/blob/master/exitwp.py>`_ to add custom parsing behaviour.
+Some things like custom handling of non standard post types is not fully configurable through the config file. You might have to modify the `source code <https://github.com/wooni005/exitwp-for-hugo/blob/master/exitwp.py>`_ to add custom parsing behaviour.
 
 Known issues
 ============
