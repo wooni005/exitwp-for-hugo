@@ -413,7 +413,7 @@ class _html2text(HTMLParser.HTMLParser):
         else:
             attrs = dict(attrs)
 
-		# This part is used for tags nested within a <pre> tag
+		# AW!! This part is used for tags nested within a <pre> tag
 		# For my website I decided to remove the <em> and <strong> tags, but you can fill it in
         if self.pre and not tag == "pre":
             if start:
@@ -588,7 +588,7 @@ class _html2text(HTMLParser.HTMLParser):
             self.lastWasList = False
 
         if tag == 'li':
-            self.pbr()
+            self.p_p = 0  #AW!! Remove newlines and spaces within bullet or numbered list
             if start:
                 if self.list: li = self.list[-1]
                 else: li = {'name':'ul', 'num':0}
