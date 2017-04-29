@@ -2,6 +2,8 @@
 Exitwp for Hugo
 ######
 
+This is a port of Thomas Frössman's exitwp tool (for Jekyll).
+
 Exitwp is tool for making migration from one or more wordpress blogs to the `hugo blog engine <https://gohugo.io/>`_ as easy as possible.
 
 By default it will try to convert as much information as possible from wordpress but can also be told to filter the amount of data it converts.
