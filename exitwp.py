@@ -9,6 +9,7 @@ from glob import glob
 from urllib import urlretrieve
 from urlparse import urljoin, urlparse
 from xml.etree.ElementTree import ElementTree, XMLTreeBuilder
+from urlparse import urlparse #AW!!
 
 import yaml
 from bs4 import BeautifulSoup
@@ -288,9 +289,11 @@ def write_jekyll(data, target_format):
         sys.stdout.write('.')
         sys.stdout.flush()
         out = None
+		
+        item_url = urlparse(i['link'])        # AW!!: Store item url for later url path relative
         yaml_header = {
             'title': i['title'],
-            'link': i['link'],
+            'url': item_url.path,              # AW!!: Renamed: link (Jekykll) -> url and and make url path relative
             'author': i['author'],
             'date': datetime.strptime(
                 i['date'], '%Y-%m-%d %H:%M:%S').replace(tzinfo=UTC()),
