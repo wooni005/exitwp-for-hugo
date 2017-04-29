@@ -327,7 +327,7 @@ def write_jekyll(data, target_format):
                     break
             fn = get_item_path(i, parentpath)
             out = open_file(fn)
-            yaml_header['layout'] = 'page'
+            yaml_header['type'] = 'page'      # AW!!: Changed from layout into type
         elif i['type'] in item_type_filter:
             pass
         else:
