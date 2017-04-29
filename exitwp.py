@@ -293,10 +293,10 @@ def write_jekyll(data, target_format):
         item_url = urlparse(i['link'])        # AW!!: Store item url for later url path relative
         yaml_header = {
             'title': i['title'],
-            'url': item_url.path,              # AW!!: Renamed: link (Jekykll) -> url and and make url path relative
+            'url': item_url.path,             # AW!!: Renamed: link (Jekykll) -> url and and make url path relative
             'author': i['author'],
             'date': datetime.strptime(
-                i['date'], '%Y-%m-%d %H:%M:%S').replace(tzinfo=UTC()),
+                i['date'], '%Y-%m-%d %H:%M:%S').replace(tzinfo=UTC())
             #'slug': i['slug'],               # AW!!: can be used
             #'wordpress_id': int(i['wp_id']), # AW!!: not used
             #'comments': i['comments'],       # AW!!: Via Disqus
@@ -312,7 +312,7 @@ def write_jekyll(data, target_format):
             i['uid'] = get_item_uid(i, date_prefix=True)
             fn = get_item_path(i, dir='_posts')
             out = open_file(fn)
-            yaml_header['layout'] = 'post'
+            yaml_header['type'] = 'post'      # AW!!: Changed from layout into type
         elif i['type'] == 'page':
             i['uid'] = get_item_uid(i)
             # Chase down parent path, if any
