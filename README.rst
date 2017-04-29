@@ -1,5 +1,5 @@
 ######
-Exitwp
+Exitwp for Hugo
 ######
 
 Exitwp is tool for making migration from one or more wordpress blogs to the `jekyll blog engine <https://github.com/mojombo/jekyll/>`_ as easy as possible.
