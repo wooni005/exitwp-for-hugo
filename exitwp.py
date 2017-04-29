@@ -297,14 +297,16 @@ def write_jekyll(data, target_format):
             'author': i['author'],
             'date': datetime.strptime(
                 i['date'], '%Y-%m-%d %H:%M:%S').replace(tzinfo=UTC()),
-            'slug': i['slug'],
-            'wordpress_id': int(i['wp_id']),
-            'comments': i['comments'],
+            #'slug': i['slug'],               # AW!!: can be used
+            #'wordpress_id': int(i['wp_id']), # AW!!: not used
+            #'comments': i['comments'],       # AW!!: Via Disqus
         }
-        if len(i['excerpt']) > 0:
-            yaml_header['excerpt'] = i['excerpt']
-        if i['status'] != u'publish':
-            yaml_header['published'] = False
+        #if len(i['excerpt']) > 0:
+        #    yaml_header['excerpt'] = i['excerpt'] # AW!!: can be used
+        if i['status'] == u'publish':
+            yaml_header['draft'] = False
+		#else:
+        #    yaml_header['draft'] = True
 
         if i['type'] == 'post':
             i['uid'] = get_item_uid(i, date_prefix=True)
