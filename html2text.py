@@ -551,7 +551,7 @@ class _html2text(HTMLParser.HTMLParser):
                 if INLINE_LINKS:
                     self.o("![")
                     self.o(alt)
-                    self.o("]("+ attrs['href'] +")")
+                    self.o("]("+ attrs['href'] +")" +"\n") #AW!!: Added newline after image tag
                 else:
                     i = self.previousIndex(attrs)
                     if i is not None:
