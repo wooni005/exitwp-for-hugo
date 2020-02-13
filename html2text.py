@@ -457,6 +457,17 @@ class _html2text(HTMLParser.HTMLParser):
                 self.inheader = False
                 return # prevent redundant emphasis marks on headers
 
+        if tag in ['iframe', 'object', 'embed']:
+            if start:
+                attrs_string = ""
+                for k, v in attrs.items():
+                    if v == None:
+                       v = "None"
+                    attrs_string += " " + k + "=\"" + v + "\""
+                self.o("<"+tag+attrs_string+">")
+            else:
+                self.o("</"+tag+">")
+
         if tag in ['p', 'div']:
             if options.google_doc:
                 if start and google_has_height(tag_style):
