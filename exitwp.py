@@ -25,7 +25,7 @@ Tested with Wordpress 3.3.1 and jekyll 0.11.2
 ######################################################
 # Configration
 ######################################################
-config = yaml.load(file('config.yaml', 'r'))
+config = yaml.safe_load(file('config.yaml', 'r'))
 wp_exports = config['wp_exports']
 build_dir = config['build_dir']
 download_images = config['download_images']
