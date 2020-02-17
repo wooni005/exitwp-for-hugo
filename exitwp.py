@@ -37,12 +37,17 @@ item_type_filter = set(config['item_type_filter'])
 item_field_filter = config['item_field_filter']
 date_fmt = config['date_format']
 body_replace = config['body_replace']
+verbose = config['verbose']
 
 
 # Time definitions
 ZERO = timedelta(0)
 HOUR = timedelta(hours=1)
 
+# Logging
+def log(msg):
+    if verbose:
+        print msg
 
 # UTC support
 class UTC(tzinfo):
@@ -82,7 +87,7 @@ def html2fmt(html, target_format):
 def parse_wp_xml(file):
     parser = ns_tracker_tree_builder()
     tree = ElementTree()
-    print 'reading: ' + wpe
+    log('reading: ' + wpe)
     root = tree.parse(file, parser)
     ns = parser.namespaces
     ns[''] = ''
@@ -124,7 +129,7 @@ def parse_wp_xml(file):
                     tag = q
                 try:
                     result = i.find(ns[namespace] + tag).text
-                    print result.encode('utf-8')
+                    #print result.encode('utf-8')
                 except AttributeError:
                     result = 'No Content Found'
                     if empty:
@@ -141,7 +146,7 @@ def parse_wp_xml(file):
             img_srcs = []
             if body is not None:
                 try:
-                    soup = BeautifulSoup(body)
+                    soup = BeautifulSoup(body, features="lxml")
                     img_tags = soup.find_all('img')
                     for img in img_tags:
                         img_srcs.append(img['src'])
@@ -167,7 +172,7 @@ def parse_wp_xml(file):
                 'excerpt': excerpt,
                 'img_srcs': img_srcs
             }
-
+            log('  item/' + export_item['wp_id'] + ': ' + export_item['title'])
             export_items.append(export_item)
 
         return export_items
@@ -180,7 +185,10 @@ def parse_wp_xml(file):
 
 def write_jekyll(data, target_format):
 
-    sys.stdout.write('writing')
+    if verbose:
+        log('writing..')
+    else:
+        sys.stdout.write('writing')
     item_uids = {}
     attachments = {}
 
@@ -276,18 +284,20 @@ def write_jekyll(data, target_format):
         return target_file
 
     for i in data['items']:
-        skip_item = False
+        skip_item = None
 
         for field, value in item_field_filter.iteritems():
             if(i[field] == value):
-                skip_item = True
+                skip_item = value
                 break
 
         if(skip_item):
+            log('  skipped(field=' + skip_item + ')/' + i['wp_id'] + ': ' + i['title'])
             continue
 
-        sys.stdout.write('.')
-        sys.stdout.flush()
+        if not verbose:
+            sys.stdout.write('.')
+            sys.stdout.flush()
         out = None
 		
         item_url = urlparse(i['link'])        # AW!!: Store item url for later url path relative
@@ -329,6 +339,7 @@ def write_jekyll(data, target_format):
             out = open_file(fn)
             yaml_header['type'] = 'page'      # AW!!: Changed from layout into type
         elif i['type'] in item_type_filter:
+            log('  skipped(type=' + i['type'] + ')/' + i['wp_id']+ ': ' + i['title'])
             pass
         else:
             print 'Unknown item type :: ' + i['type']
@@ -371,8 +382,16 @@ def write_jekyll(data, target_format):
                 print '\n Parse error on: ' + i['title']
 
             out.close()
+            log('  written/' + i['wp_id'] + ': ' + i['title'])
     print '\n'
 
+for arg in range(1, len(sys.argv)):
+    if sys.argv[arg] == '-v':
+        verbose = True
+    elif sys.argv[arg] == '-h':
+        print 'usage: ' + sys.argv[0] + ' [-h(elp)] [-v(erbose)]'
+        sys.exit(0)
+print 'starting..'
 wp_exports = glob(wp_exports + '/*.xml')
 for wpe in wp_exports:
     data = parse_wp_xml(wpe)

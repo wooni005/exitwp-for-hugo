@@ -1,3 +1,6 @@
+# Tell me what's going on.. can also pass command line argument -v
+verbose: False
+
 # The directory where exitwp looks for wordpress export xml files.
 wp_exports: wordpress-xml
 
