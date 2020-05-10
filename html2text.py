@@ -124,8 +124,8 @@ def unescape(s):
 def onlywhite(line):
     """Return true if the line does only consist of whitespace characters."""
     for c in line:
-        if c is not ' ' and c is not '  ':
-            return c is ' '
+        if (c != ' ') and (c != '  '):
+            return c == ' '
     return line
 
 def optwrap(text):
@@ -413,23 +413,22 @@ class _html2text(HTMLParser.HTMLParser):
         else:
             attrs = dict(attrs)
 
-		# AW!! This part is used for tags nested within a <pre> tag
-		# For my website I decided to remove the <em> and <strong> tags, but you can fill it in
+        # AW!! This part is used for tags nested within a <pre> tag
+        # For my website I decided to remove the <em> and <strong> tags, but you can fill it in
         if self.pre and not tag == "pre":
             if start:
-				if tag in ['em', 'i', 'u']: self.o("")    # "_"
-				elif tag in ['strong', 'b']: self.o("")   # "**"
-				else:
-					attrs_string = ""
-					for k, v in attrs.items():
-						attrs_string += " " + k + "=\"" + v + "\""
-					self.o("<"+tag+attrs_string+">")
+                if tag in ['em', 'i', 'u']: self.o("")    # "_"
+                elif tag in ['strong', 'b']: self.o("")   # "**"
+                else:
+                    attrs_string = ""
+                    for k, v in attrs.items():
+                        attrs_string += " " + k + "=\"" + v + "\""
+                    self.o("<"+tag+attrs_string+">")
             else:
-				if tag in ['em', 'i', 'u']: self.o("")
-				elif tag in ['strong', 'b']: self.o("")
-				else:
-					self.o("</"+tag+">")
-					
+                if tag in ['em', 'i', 'u']: self.o("")
+                elif tag in ['strong', 'b']: self.o("")
+                else:
+                    self.o("</"+tag+">")
             return None
 
         if options.google_doc:
