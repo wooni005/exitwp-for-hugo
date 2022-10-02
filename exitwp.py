@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2
 
 import codecs
 import os
@@ -9,6 +9,7 @@ from glob import glob
 from urllib import urlretrieve
 from urlparse import urljoin, urlparse
 from xml.etree.ElementTree import ElementTree, XMLTreeBuilder
+from urlparse import urlparse #AW!!
 
 import yaml
 from bs4 import BeautifulSoup
@@ -24,7 +25,7 @@ Tested with Wordpress 3.3.1 and jekyll 0.11.2
 ######################################################
 # Configration
 ######################################################
-config = yaml.load(file('config.yaml', 'r'))
+config = yaml.safe_load(file('config.yaml', 'r'))
 wp_exports = config['wp_exports']
 build_dir = config['build_dir']
 download_images = config['download_images']
@@ -36,12 +37,17 @@ item_type_filter = set(config['item_type_filter'])
 item_field_filter = config['item_field_filter']
 date_fmt = config['date_format']
 body_replace = config['body_replace']
+verbose = config['verbose']
 
 
 # Time definitions
 ZERO = timedelta(0)
 HOUR = timedelta(hours=1)
 
+# Logging
+def log(msg):
+    if verbose:
+        print(msg)
 
 # UTC support
 class UTC(tzinfo):
@@ -81,7 +87,7 @@ def html2fmt(html, target_format):
 def parse_wp_xml(file):
     parser = ns_tracker_tree_builder()
     tree = ElementTree()
-    print 'reading: ' + wpe
+    log('reading: ' + wpe)
     root = tree.parse(file, parser)
     ns = parser.namespaces
     ns[''] = ''
@@ -122,8 +128,8 @@ def parse_wp_xml(file):
                 else:
                     tag = q
                 try:
-                    result = (i.find(q, ns) or i.find(tag) or i.find(ns[namespace] + tag)).text.strip()
-                    print result.encode('utf-8')
+                    result = i.find(ns[namespace] + tag).text
+                    #print result.encode('utf-8')
                 except AttributeError:
                     result = 'No Content Found'
                     if empty:
@@ -140,12 +146,12 @@ def parse_wp_xml(file):
             img_srcs = []
             if body is not None:
                 try:
-                    soup = BeautifulSoup(body)
+                    soup = BeautifulSoup(body, features="lxml")
                     img_tags = soup.find_all('img')
                     for img in img_tags:
                         img_srcs.append(img['src'])
                 except:
-                    print 'could not parse html: ' + body
+                    print('could not parse html: ' + body)
             # print img_srcs
 
             excerpt = gi('excerpt:encoded', empty=True)
@@ -166,7 +172,7 @@ def parse_wp_xml(file):
                 'excerpt': excerpt,
                 'img_srcs': img_srcs
             }
-
+            log('  item/' + export_item['wp_id'] + ': ' + export_item['title'])
             export_items.append(export_item)
 
         return export_items
@@ -179,11 +185,14 @@ def parse_wp_xml(file):
 
 def write_jekyll(data, target_format):
 
-    sys.stdout.write('writing')
+    if verbose:
+        log('writing..')
+    else:
+        sys.stdout.write('writing')
     item_uids = {}
     attachments = {}
 
-    def get_blog_path(data, path_infix='jekyll'):
+    def get_blog_path(data, path_infix='hugo'): #AW!! Changed jekyll path into hugo
         name = data['header']['link']
         name = re.sub('^https?', '', name)
         name = re.sub('[^A-Za-z0-9_.-]', '', name)
@@ -193,7 +202,7 @@ def write_jekyll(data, target_format):
 
     def get_full_dir(dir):
         full_dir = os.path.normpath(blog_dir + '/' + dir)
-        if (not os.path.exists(full_dir)):
+        if not os.path.exists(full_dir):
             os.makedirs(full_dir)
         return full_dir
 
@@ -210,12 +219,8 @@ def write_jekyll(data, target_format):
             result = item_uids[namespace][item['wp_id']]
         else:
             uid = []
-            if (date_prefix):
-                try:
-                    dt = datetime.strptime(item['date'], date_fmt)
-                except:
-                    dt = datetime.today()
-                    print 'Wrong date in', item['title']
+            if date_prefix:
+                dt = datetime.strptime(item['date'], date_fmt)
                 uid.append(dt.strftime('%Y-%m-%d'))
                 uid.append('-')
             s_title = item['slug']
@@ -237,10 +242,9 @@ def write_jekyll(data, target_format):
 
     def get_item_path(item, dir=''):
         full_dir = get_full_dir(dir)
-        filename_parts = [full_dir, '/']
-        filename_parts.append(item['uid'])
+        filename_parts = [full_dir, '/', item['uid']]
         if item['type'] == 'page':
-            if (not os.path.exists(''.join(filename_parts))):
+            if not os.path.exists(''.join(filename_parts)):
                 os.makedirs(''.join(filename_parts))
             filename_parts.append('/index')
         filename_parts.append('.')
@@ -271,7 +275,7 @@ def write_jekyll(data, target_format):
         target_dir = os.path.normpath(blog_dir + '/' + dir_prefix + '/' + dir)
         target_file = os.path.normpath(target_dir + '/' + filename)
 
-        if (not os.path.exists(target_dir)):
+        if not os.path.exists(target_dir):
             os.makedirs(target_dir)
 
         # if src not in attachments[dir]:
@@ -279,43 +283,45 @@ def write_jekyll(data, target_format):
         return target_file
 
     for i in data['items']:
-        skip_item = False
+        skip_item = None
 
         for field, value in item_field_filter.iteritems():
-            if(i[field] == value):
-                skip_item = True
+            if i[field] == value:
+                skip_item = value
                 break
 
-        if(skip_item):
+        if skip_item:
+            log('  skipped(field=' + skip_item + ')/' + i['wp_id'] + ': ' + i['title'])
             continue
 
-        sys.stdout.write('.')
-        sys.stdout.flush()
+        if not verbose:
+            sys.stdout.write('.')
+            sys.stdout.flush()
         out = None
-        try:
-            date = datetime.strptime(i['date'], '%Y-%m-%d %H:%M:%S').replace(tzinfo=UTC())
-        except:
-            date = datetime.today()
-            print 'Wrong date in', i['title']
+
+        item_url = urlparse(i['link'])        # AW!!: Store item url for later url path relative
         yaml_header = {
             'title': i['title'],
-            'link': i['link'],
+            'url': item_url.path,             # AW!!: Renamed: link (Jekykll) -> url and and make url path relative
             'author': i['author'],
-            'date': date,
-            'slug': i['slug'],
-            'wordpress_id': int(i['wp_id']),
-            'comments': i['comments'],
+            'date': datetime.strptime(
+                i['date'], '%Y-%m-%d %H:%M:%S').replace(tzinfo=UTC())
+            #'slug': i['slug'],               # AW!!: can be used
+            #'wordpress_id': int(i['wp_id']), # AW!!: not used
+            #'comments': i['comments'],       # AW!!: Via Disqus
         }
-        if len(i['excerpt']) > 0:
-            yaml_header['excerpt'] = i['excerpt']
-        if i['status'] != u'publish':
-            yaml_header['published'] = False
+        #if len(i['excerpt']) > 0:
+        #    yaml_header['excerpt'] = i['excerpt'] # AW!!: can be used
+        if i['status'] == u'publish':
+            yaml_header['draft'] = False
+        #else:
+        #    yaml_header['draft'] = True
 
         if i['type'] == 'post':
             i['uid'] = get_item_uid(i, date_prefix=True)
             fn = get_item_path(i, dir='_posts')
             out = open_file(fn)
-            yaml_header['layout'] = 'post'
+            yaml_header['type'] = 'post'      # AW!!: Changed from layout into type
         elif i['type'] == 'page':
             i['uid'] = get_item_uid(i)
             # Chase down parent path, if any
@@ -330,11 +336,12 @@ def write_jekyll(data, target_format):
                     break
             fn = get_item_path(i, parentpath)
             out = open_file(fn)
-            yaml_header['layout'] = 'page'
+            yaml_header['type'] = 'page'      # AW!!: Changed from layout into type
         elif i['type'] in item_type_filter:
+            log('  skipped(type=' + i['type'] + ')/' + i['wp_id']+ ': ' + i['title'])
             pass
         else:
-            print 'Unknown item type :: ' + i['type']
+            print('Unknown item type :: ' + i['type'])
 
         if download_images:
             for img in i['img_srcs']:
@@ -343,8 +350,7 @@ def write_jekyll(data, target_format):
                                         img.encode('utf-8')),
                                 get_attachment_path(img, i['uid']))
                 except:
-                    print '\n unable to download ' + urljoin(
-                        data['header']['link'], img.encode('utf-8'))
+                    print('\n unable to download ' + urljoin(data['header']['link'], img.encode('utf-8')))
 
         if out is not None:
             def toyaml(data):
@@ -371,14 +377,22 @@ def write_jekyll(data, target_format):
             try:
                 out.write(html2fmt(i['body'], target_format))
             except:
-                print '\n Parse error on: ' + i['title']
+                print('\n Parse error on: ' + i['title'])
 
             out.close()
-    print '\n'
+            log('  written/' + i['wp_id'] + ': ' + i['title'])
+    print( '\n')
 
+for arg in range(1, len(sys.argv)):
+    if sys.argv[arg] == '-v':
+        verbose = True
+    elif sys.argv[arg] == '-h':
+        print('usage: ' + sys.argv[0] + ' [-h(elp)] [-v(erbose)]')
+        sys.exit(0)
+print('starting..')
 wp_exports = glob(wp_exports + '/*.xml')
 for wpe in wp_exports:
     data = parse_wp_xml(wpe)
     write_jekyll(data, target_format)
 
-print 'done'
+print('done')

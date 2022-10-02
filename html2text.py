@@ -413,14 +413,23 @@ class _html2text(HTMLParser.HTMLParser):
         else:
             attrs = dict(attrs)
 
+		# AW!! This part is used for tags nested within a <pre> tag
+		# For my website I decided to remove the <em> and <strong> tags, but you can fill it in
         if self.pre and not tag == "pre":
             if start:
-                attrs_string = ""
-                for k, v in attrs.items():
-                    attrs_string += " " + k + "=\"" + v + "\""
-                self.o("<"+tag+attrs_string+">")
+				if tag in ['em', 'i', 'u']: self.o("")    # "_"
+				elif tag in ['strong', 'b']: self.o("")   # "**"
+				else:
+					attrs_string = ""
+					for k, v in attrs.items():
+						attrs_string += " " + k + "=\"" + v + "\""
+					self.o("<"+tag+attrs_string+">")
             else:
-                self.o("</"+tag+">")
+				if tag in ['em', 'i', 'u']: self.o("")
+				elif tag in ['strong', 'b']: self.o("")
+				else:
+					self.o("</"+tag+">")
+					
             return None
 
         if options.google_doc:
@@ -447,6 +456,17 @@ class _html2text(HTMLParser.HTMLParser):
             else:
                 self.inheader = False
                 return # prevent redundant emphasis marks on headers
+
+        if tag in ['iframe', 'object', 'embed']:
+            if start:
+                attrs_string = ""
+                for k, v in attrs.items():
+                    if v == None:
+                       v = "None"
+                    attrs_string += " " + k + "=\"" + v + "\""
+                self.o("<"+tag+attrs_string+">")
+            else:
+                self.o("</"+tag+">")
 
         if tag in ['p', 'div']:
             if options.google_doc:
@@ -542,7 +562,7 @@ class _html2text(HTMLParser.HTMLParser):
                 if INLINE_LINKS:
                     self.o("![")
                     self.o(alt)
-                    self.o("]("+ attrs['href'] +")")
+                    self.o("]("+ attrs['href'] +")" +"\n") #AW!!: Added newline after image tag
                 else:
                     i = self.previousIndex(attrs)
                     if i is not None:
@@ -579,7 +599,7 @@ class _html2text(HTMLParser.HTMLParser):
             self.lastWasList = False
 
         if tag == 'li':
-            self.pbr()
+            self.p_p = 0  #AW!! Remove newlines and spaces within bullet or numbered list
             if start:
                 if self.list: li = self.list[-1]
                 else: li = {'name':'ul', 'num':0}
