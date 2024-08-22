@@ -1,10 +1,13 @@
 # ExitWP for Hugo
 
+## Convert WordPress and Squarespace exports to the [Hugo static site generator](https://gohugo.io/)
+
 This is an updated version of the ExitWP tool, originally created by Thomas Frössman for Jekyll and later adapted for Hugo by Arjan Wooning.
 
 For a detailed guide and background information, visit [Arjan Wooning's website](https://arjan.wooning.cz/conversion-tools-from-wordpress-to-hugo/#final-solution-exitwp-for-hugo).
 
-ExitWP is a tool designed to simplify the migration process from one or more WordPress blogs to the [Hugo static site generator](https://gohugo.io/). It aims to convert as much information as possible from WordPress, with options to filter the converted data.
+ExitWP is a tool designed to simplify the migration process from one or more WordPress blogs, or other blogs/websites exported to the WordPress XML format, to the [Hugo static site generator](https://gohugo.io/). It aims to convert as much information as possible from the WordPress export, with options to filter the converted data.
+[SquareSpace](https://squarespace.com/) also offers the option to [export your site as WordPress formatted XML file(s)](https://support.squarespace.com/hc/en-us/articles/206566687-Exporting-your-site?platform=v6&websiteId=5974c4a71b631b9a769048c6).
 
 ## Features
 
