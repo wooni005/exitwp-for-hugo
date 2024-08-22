@@ -1,4 +1,8 @@
-html5lib==1.0b1
-beautifulsoup4==4.2.0
-PyYAML==3.10
-html2text==3.200.3
+beautifulsoup4==4.12.3
+html2text==2024.2.26
+html5lib==1.1
+markdownify==0.13.1
+PyYAML==6.0.2
+six==1.16.0
+soupsieve==2.6
+webencodings==0.5.1

@@ -8,15 +8,66 @@ wp_exports: wordpress-xml
 build_dir: build
 
 # Output format: primary choices are html or markdown.
+# Some functions, like the inclusion of comments, only output in markdown,
+# and may look not as expected in html.
 target_format: markdown
 
 # The date format of the wikipedia export file.
-# I'm not sure if this ever differs depending on wordpress localization.
-# Wordpress is often so full of strange quirks so I wouldnt rule it out.
+# I'm not sure if this ever differs depending on WordPress localization.
+# Wordpress is often so full of strange quirks so I wouldn't rule it out.
 date_format: '%Y-%m-%d %H:%M:%S'
 
-# Try to download and reloacate all images locally to the blog.
+# Try to download and relocate all images locally to the blog.
 download_images: True
+
+# Image URL filtering
+image_settings:
+  # URL parts to exclude when processing images
+  excluded_url_parts:
+    - 'tracking.pixel.com'
+    - 'http://www.assoc-amazon.com/'
+  # Domains to always include when processing images
+  included_domains:
+    - 'images.mysite.com'
+    - 'cdn.mysite.com'
+    - 'myoldblog.com'
+  # Default behavior for image validity when no other conditions are met
+  # Set to true to include images by default, false to exclude by default
+  #
+  # If set to true:
+  #   - All images will be considered valid unless explicitly excluded
+  #   - The 'included_domains' setting will have no effect
+  #
+  # If set to false:
+  #   - Only images from 'included_domains' will be considered valid
+  #   - All other images will be excluded unless explicitly included
+  #   - This can be handy if you want to process only images from your old
+  #     blog for example, but not download images from the public internet
+  #     to your own (new) server.
+  #
+  # Examples:
+  # 1. To process all images except those from specific domains:
+  #    default_image_validity: true
+  #    excluded_url_parts:
+  #      - 'ads.example.com'
+  #      - 'tracking.example.com'
+  #
+  # 2. To process only images from specific domains:
+  #    default_image_validity: false
+  #    included_domains:
+  #      - 'images.mysite.com'
+  #      - 'cdn.mysite.com'
+  #
+  default_image_validity: false
+  # Icon to use when an image is not found. Make sure to put this file in
+  # the right place on your destination server manually.
+  # (This file is not supplied with exitwp, you have to pick one yourself.)
+  not_found_icon: '/icons/question-warning.svg'
+  # Default timeout (in seconds) for image downloads
+  download_timeout: 3
+
+# Include old/existing comments with the post
+include_comments: true
 
 # Item types we don't want to import.
 item_type_filter: {attachment, nav_menu_item}
@@ -25,21 +76,29 @@ item_type_filter: {attachment, nav_menu_item}
 # By default, we're filtering based on field "status" set to "draft"
 item_field_filter: {status: draft}
 
+# Output label for categories or tags.
+# NOTE: This overrides the name_mapping in the taxonomies below!
+# Default will be tags_label: 'categories', as specified in the exitwp.py
+# script, if not defined here.
+tags_label: 'tags'
+
 taxonomies:
   # Filter taxonomies.
   filter: {}
   # Filter taxonomies entries.
   entry_filter: {category: Uncategorized}
   # Rename taxonomies when writing jekyll output format.
+  # NOTE: categories label is overwritten by the tags_label above!!
   name_mapping: {category: categories, post_tag: tags}
 
 # Replace certain patterns in body
 # Simply replace the key with its value
 body_replace: {
+  # '\(/media/': '(/images/posts/',
   # '<pre.*?lang="(.*?)".*?>': '\n{% codeblock \1 lang:\1 %}\n',
   # '<pre.*?>': '\n{% codeblock %}\n',
   # '</pre>': '\n{% endcodeblock %}\n',
 
-#    '[python]': '{% codeblock lang:python %}',
-#    '[/python]': '{% endcodeblock %}',
-}
+  #    '[python]': '{% codeblock lang:python %}',
+  #    '[/python]': '{% endcodeblock %}',
+  }
